@@ -5,14 +5,14 @@ from colorama import just_fix_windows_console
 
 just_fix_windows_console()
 
-REQUIRED = ("count", "phase", "amplitude", "rate", "frenq")
+REQUIRED = ("count", "phase", "amplitude", "rate", "freq")
 
 LABELS = {
     "count": "count: Количество отсчётов",
     "phase": "phase: Начальная фаза (°)",
     "amplitude": "amplitude: Амплитуда",
     "rate": "rate: Частота дискретизации (Гц)",
-    "frenq": "frenq: Частота сигнала (Гц)"
+    "freq": "freq: Частота сигнала (Гц)"
 }
 
 COLOR = sys.stdout.isatty()
@@ -22,7 +22,7 @@ def harmgen(count:int,
             phase:int|float,
             amplitude:int|float,
             rate:int,
-            frenq:int|float) -> list[float]:
+            freq:int|float) -> list[float]:
 
     if rate <= 0:
         raise ValueError("rate must be positive")
@@ -32,13 +32,13 @@ def harmgen(count:int,
         raise ValueError("phase must be finite")
     if not math.isfinite(amplitude):
         raise ValueError("amplitude must be finite")
-    if not math.isfinite(frenq) or not 0 <= frenq < rate/2:
+    if not math.isfinite(freq) or not 0 <= freq < rate/2:
         raise ValueError("frequency exceeds Nyquist limit")
 
-    if isinstance(frenq, int):
-        freq_num, freq_den = frenq, 1
+    if isinstance(freq, int):
+        freq_num, freq_den = freq, 1
     else:
-        freq_num, freq_den = frenq.as_integer_ratio()
+        freq_num, freq_den = freq.as_integer_ratio()
 
     phase_rad = math.radians(math.remainder(phase, 360))
     cycle_den = rate * freq_den
@@ -190,7 +190,7 @@ def generate_file(settings:dict,
         success(f"Сигнал сохранён: {filename}")
         info(f"Количество отсчётов: {len(signal)}")
         info(f"Формат: {output_format.upper()}")
-        info(f"Длительность: {settings['count'] / settings['rate'] * 1000:.3f} s")
+        info(f"Длительность: {settings['count'] / settings['rate'] * 1000:.3f} ms")
 
     except (ValueError, OSError, OverflowError) as exc:
         error(str(exc))
@@ -210,7 +210,7 @@ def show_help() -> None:
         "  phase 45.5                Начальная фаза",
         "  amplitude 2000            Амплитуда",
         "  rate 48000                Частота дискретизации",
-        "  frenq 1000                Частота сигнала",
+        "  freq 1000                Частота сигнала",
         "  reset                     Сбросить настройки",
         "  back                      Вернуться в меню",
         "",
@@ -241,11 +241,8 @@ def parse_arguments(arguments:list[str]) -> dict:
         if not separator or not key or not value:
             raise ValueError(f"Некорректный аргумент: {argument}")
 
-        if key not in ("count", "amplitude", "frenq", "freq"):
+        if key not in ("count", "amplitude", "freq"):
             raise ValueError(f"Недопустимый параметр участка: {key}")
-
-        if key == "freq":
-            key = "frenq"
 
         result[key] = parse_number(value)
 
@@ -266,7 +263,7 @@ def construct_menu(settings:dict) -> None:
         if construction:
             content.extend(
                 f"  #{index} | N={segment['count']} | "
-                f"F={segment['frenq']} Hz | A={segment['amplitude']} | D={segment['count'] / segment['rate'] * 1000:.3f} s"
+                f"F={segment['freq']} Hz | A={segment['amplitude']} | D={segment['count'] / segment['rate'] * 1000:.3f} ms"
                 for index, segment in enumerate(construction, 1)
             )
         else:
@@ -354,14 +351,14 @@ def construct_menu(settings:dict) -> None:
                         phase=current_phase,
                         amplitude=segment["amplitude"],
                         rate=segment["rate"],
-                        frenq=segment["frenq"]
+                        freq=segment["freq"]
                     )
 
                     signal.extend(part)
 
                     current_phase = math.degrees(math.remainder(
                         math.radians(current_phase) +
-                        math.tau * segment["frenq"] *
+                        math.tau * segment["freq"] *
                         segment["count"] / segment["rate"],
                         math.tau
                     ))
