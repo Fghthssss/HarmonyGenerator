@@ -190,6 +190,7 @@ def generate_file(settings:dict,
         success(f"Сигнал сохранён: {filename}")
         info(f"Количество отсчётов: {len(signal)}")
         info(f"Формат: {output_format.upper()}")
+        info(f"Длительность: {settings['count'] / settings['rate'] * 1000:.3f} s")
 
     except (ValueError, OSError, OverflowError) as exc:
         error(str(exc))
@@ -265,7 +266,7 @@ def construct_menu(settings:dict) -> None:
         if construction:
             content.extend(
                 f"  #{index} | N={segment['count']} | "
-                f"F={segment['frenq']} Hz | A={segment['amplitude']}"
+                f"F={segment['frenq']} Hz | A={segment['amplitude']} | D={segment['count'] / segment['rate'] * 1000:.3f} s"
                 for index, segment in enumerate(construction, 1)
             )
         else:
