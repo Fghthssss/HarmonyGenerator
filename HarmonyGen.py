@@ -76,7 +76,7 @@ def info(message:str) -> None:
 
 def read_command(prompt:str) -> list[str]:
     try:
-        return input(style(f"{prompt} ❯ ", "1;36")).strip().split()
+        return input(style(f"{prompt} >>> ", "1;36")).strip().split()
     except EOFError:
         return ["quit"]
 
@@ -154,9 +154,6 @@ def generate_file(settings:dict, filename:str, mode:str, output_format:str) -> N
     if missing:
         error("Не заданы параметры: " + ", ".join(missing))
         return
-    if mode != "w":
-        error("Поддерживается только режим записи w")
-        return
     if output_format not in ("raw", "conv"):
         error("Формат должен быть raw или conv")
         return
@@ -173,7 +170,7 @@ def generate_file(settings:dict, filename:str, mode:str, output_format:str) -> N
         if output_format == "conv":
             signal = convsignal(signal)
 
-        with open(filename, "w", encoding="utf-8") as file:
+        with open(filename, mode, encoding="utf-8") as file:
             file.write("\n".join(map(str, signal)))
 
         success(f"Сигнал сохранён: {filename}")
@@ -190,6 +187,7 @@ def show_help() -> None:
     print(style("MAIN MENU", "1;33"))
     print("  settings                  Открыть настройки")
     print("  generate FILE w FORMAT    Создать сигнал")
+    print("  construct FILE FORMAT     Конструктор сигнала")
     print("  help                      Справка")
     print("  quit                      Выход")
 
