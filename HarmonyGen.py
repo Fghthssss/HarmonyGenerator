@@ -17,7 +17,6 @@ def harmgen(count:int,
         raise ValueError("phase must be finite")
     if not math.isfinite(frenq) or not 0 <= frenq < rate/2:
         raise ValueError("frequency exceeds Nyquist limit")
-
     if isinstance(frenq, int):
         freq_num, freq_den = frenq, 1
     else:
@@ -36,10 +35,8 @@ def harmgen(count:int,
 
     return signal
 
-
 def convsignal(signal:list[float],) -> list[int]:
     return [min(4095, max(0, round(value))) for value in signal]
-
 
 def parse_number(value:str) -> int|float:
     try:
@@ -47,13 +44,10 @@ def parse_number(value:str) -> int|float:
     except ValueError:
         return float(value)
 
-
-
 COLOR = sys.stdout.isatty()
 
 def style(text:str, code:str) -> str:
     return f"\033[{code}m{text}\033[0m" if COLOR else text
-
 
 def header(title:str) -> None:
     print()
@@ -61,27 +55,20 @@ def header(title:str) -> None:
     print(style("│" + title.center(48) + "│", "1;36"))
     print(style("╰" + "─"*48 + "╯", "36"))
 
-
 def success(message:str) -> None:
     print(f"{style('[OK]', '32')} {message}")
-
 
 def error(message:str) -> None:
     print(f"{style('[ERROR]', '31')} {message}")
 
-
 def info(message:str) -> None:
     print(f"{style('[INFO]', '36')} {message}")
-
 
 def read_command(prompt:str) -> list[str]:
     try:
         return input(style(f"{prompt} >>> ", "1;36")).strip().split()
     except EOFError:
         return ["quit"]
-
-
-# Settings
 
 def show_settings(settings:dict) -> None:
     labels = {
@@ -91,36 +78,26 @@ def show_settings(settings:dict) -> None:
         "rate": "Частота дискретизации (Гц)",
         "frenq": "Частота сигнала (Гц)"
     }
-
     header("CURRENT SETTINGS")
-
     for name, value in settings.items():
         value = "Не задано" if value is None else str(value)
         print(f"  {labels[name]:<34} {value}")
-
     print()
 
 
 def settings_menu(settings:dict) -> None:
     while True:
         show_settings(settings)
-
         info("Введите параметр и значение")
         info("Команды: show | reset | back")
-
         com = read_command("settings")
-
         if not com:
             continue
-
         action = com[0].lower()
-
         if action in ("back", "menu", "0"):
             return
-
         elif action == "show":
             continue
-
         elif action == "reset":
             for name in settings:
                 settings[name] = None
@@ -131,7 +108,6 @@ def settings_menu(settings:dict) -> None:
             if len(com) != 2:
                 error(f"Использование: {action} <value>")
                 continue
-
             try:
                 if action in ("count", "rate"):
                     value = int(com[1])
@@ -143,7 +119,6 @@ def settings_menu(settings:dict) -> None:
 
             except ValueError:
                 error("Некорректное значение")
-
         else:
             error("Неизвестный параметр")
 
@@ -166,20 +141,16 @@ def generate_file(settings:dict, filename:str, mode:str, output_format:str) -> N
             rate=settings["rate"],
             frenq=settings["frenq"]
         )
-
         if output_format == "conv":
             signal = convsignal(signal)
-
         with open(filename, mode, encoding="utf-8") as file:
             file.write("\n".join(map(str, signal)))
 
         success(f"Сигнал сохранён: {filename}")
         info(f"Количество отсчётов: {len(signal)}")
         info(f"Формат: {output_format.upper()}")
-
     except (ValueError, OSError, OverflowError) as exc:
         error(str(exc))
-
 
 def show_help() -> None:
     header("COMMAND REFERENCE")
@@ -206,8 +177,6 @@ def show_help() -> None:
     print("  raw                       Сохранение float")
     print("  conv                      Сохранение int")
     print()
-
-
 
 def main() -> int:
     settings = {
